@@ -1,0 +1,8 @@
+{
+  "name": "LDPR Mini App",
+  "description": "Официальное мини-приложение для взаимодействия с платформой ЛДПР.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ]
+}
