@@ -14,33 +14,52 @@ const App: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [userData, setUserData] = useState<MeResponse | null>(null);
 
-  const initAuth = useCallback(async () => {
-    // 1. Check if running inside Telegram
-    const tg = (window as any).Telegram?.WebApp;
-    
-    if (!tg || !tg.initData) {
-      // Small delay to prevent flash in dev if needed, but per requirements:
-      setAppState(AppState.NOT_TELEGRAM);
-      return;
-    }
-
-    tg.ready();
-    tg.expand();
-
-    try {
-      // 2. Try to login
-      const { token } = await login({ initData: tg.initData });
-      localStorage.setItem(STORAGE_KEY, token);
-
-      // 3. Fetch user info
-      const me = await getMe(token);
-      setUserData(me);
-      setAppState(AppState.AUTH_SUCCESS);
-    } catch (error) {
-      console.error('Auth failure:', error);
-      setAppState(AppState.AUTH_ERROR);
-    }
-  }, []);
+	const initAuth = useCallback(async () => {
+	  // 1. Check if running inside Telegram
+	  const tg = (window as any).Telegram?.WebApp;
+	  
+	  if (!tg || !tg.initData) {
+	    setAppState(AppState.NOT_TELEGRAM);
+	    return;
+	  }
+	
+	  tg.ready();
+	  tg.expand();
+	
+	  try {
+	    // 2. Convert initData to string
+	    let initDataString: string;
+	    
+	    if (typeof tg.initData === 'string') {
+	      // Если initData уже строка (старый формат)
+	      initDataString = tg.initData;
+	    } else {
+	      // Если это объект WebAppInitData (новый формат)
+	      initDataString = tg.initDataUnsafe?.query_id 
+	        ? `query_id=${tg.initDataUnsafe.query_id}&` +
+	          `user=${JSON.stringify(tg.initDataUnsafe.user)}&` +
+	          `auth_date=${tg.initDataUnsafe.auth_date}&` +
+	          `hash=${tg.initDataUnsafe.hash}`
+	        : '';
+	    }
+	
+	    if (!initDataString) {
+	      throw new Error('Invalid initData');
+	    }
+	
+	    // 3. Try to login
+	    const { token } = await login({ initData: initDataString });
+	    localStorage.setItem(STORAGE_KEY, token);
+	
+	    // 4. Fetch user info
+	    const me = await getMe(token);
+	    setUserData(me);
+	    setAppState(AppState.AUTH_SUCCESS);
+	  } catch (error) {
+	    console.error('Auth failure:', error);
+	    setAppState(AppState.AUTH_ERROR);
+	  }
+	}, []);
 
   useEffect(() => {
     initAuth();
