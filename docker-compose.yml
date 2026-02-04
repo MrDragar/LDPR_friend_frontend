@@ -1,0 +1,17 @@
+version: '2.4'
+
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "87:80"
+    networks:
+      - app_network
+    restart: always
+
+networks:
+  app_network:
+    driver: bridge
+    external: true
+
+    
