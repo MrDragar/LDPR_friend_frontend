@@ -1,0 +1,29 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Deploy to Server via SSH
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          # Переходим в директорию фронтенда
+          cd /root/projects/LDPR_friend_frontend
+          
+          # Обновляем код
+          git pull origin main
+          
+          # Перестраиваем и запускаем контейнер
+          docker compose down
+          docker compose build 
+          docker compose up -d
+          
