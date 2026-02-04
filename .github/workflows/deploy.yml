@@ -17,7 +17,7 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
           # Переходим в директорию фронтенда
-          /root/projects/LDPR_friend_frontend
+          cd /root/projects/LDPR_friend_frontend
           
           # Обновляем код
           git pull origin main
